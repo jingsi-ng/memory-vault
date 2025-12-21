@@ -1,16 +1,77 @@
 ---
-
+import '../styles/main.css';
+import '../styles/entry.css';
 ---
 
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+  <title>Project 451 | The Memory Vault</title>
+</head>
+
+<body class="bg-background">
+  <div class="entry-container">
+    <div class="grid-overlay"></div>
+    <div class="edge-gradient"></div>
+    <div class="top-bar"></div>
+    <div class="dot dot-1"></div>
+    <div class="dot dot-2"></div>
+    <div class="dot dot-3"></div>
+    <div class="dot dot-4"></div>
+    <div class="dot dot-5"></div>
+    <div class="dot dot-6"></div>
+    <div class="dot dot-7"></div>
+    <div class="dot dot-8"></div>
+
+    <main class="relative z-10 text-center px-4 max-w-2xl">
+      <div class="logo-container mx-auto">
+        <div class="logo-ring"></div>
+        <div class="logo-inner">
+          <span class="logo-text">451</span>
+        </div>
+      </div>
+
+      <h1 class="font-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-wider mb-2 animate-fade-in">
+        <span class="text-primary">PROJECT</span> <span class="text-text">451</span>
+      </h1>
+      
+      <p class="font-display text-lg md:text-xl tracking-[0.3em] text-primary uppercase mb-8 animate-fade-in-delay-1">
+        The Memory Vault
+      </p>
+
+      <div class="space-y-2 mb-8 font-mono text-sm md:text-base">
+        <p class="terminal-line text-secondary">
+          <span class="text-primary">></span> INITIALIZING ARCHIVE SYSTEM...
+        </p>
+        <p class="terminal-line text-secondary">
+          <span class="text-primary">></span> LOADING: FORBIDDEN TEXTS DATABASE
+        </p>
+        <p class="terminal-line text-secondary">
+          <span class="text-primary">></span> STATUS: READY TO PRESERVE<span class="blink">_</span>
+        </p>
+      </div>
+
+      <blockquote class="quote font-body italic text-text-muted text-base md:text-lg mb-10 max-w-lg mx-auto leading-relaxed">
+        "I design with intention, code with passion,<br>
+		and preserve stories that matter."
+      </blockquote>
+
+
+      <a href="/home" class="enter-btn btn-primary inline-block font-display text-sm md:text-base uppercase tracking-widest px-10 py-4 border-2 border-primary bg-primary text-background transition-all duration-300 hover:bg-transparent hover:text-primary">
+        Enter The Vault
+      </a>
+    </main>
+
+    <footer class="absolute bottom-6 left-0 right-0 text-center">
+      <p class="font-mono text-xs text-neutral animate-fade-in-delay-4">
+       2077 PROJECT 451: THE MEMORY VAULT | &copy; 2025 Chen See Ng | CLASSIFIED SYSTEM | v4.51
+      </p>
+    </footer>
+  </div>
+</body>
 </html>

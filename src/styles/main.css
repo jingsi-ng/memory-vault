@@ -1,0 +1,356 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #FF6B35;
+  --primary-light: #FF8C5A;
+  --primary-dark: #E55A2B;
+  --secondary: #00E5FF;
+  --secondary-light: #6EFFFF;
+  --secondary-dark: #00B8D4;
+  --accent: #FF1744;
+  --background: #0D0D0D;
+  --background-light: #1A1A1A;
+  --text: #F5F1E8;
+  --text-muted: #A0998A;
+  --neutral: #4A5568;
+  
+  --glow-primary: rgba(255, 107, 53, 0.5);
+  --glow-secondary: rgba(0, 229, 255, 0.5);
+  --glow-accent: rgba(255, 23, 68, 0.4);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-text font-body;
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold text-text tracking-wide;
+    text-transform: uppercase;
+  }
+
+  h1 { @apply text-3xl md:text-4xl lg:text-5xl; }
+  h2 { @apply text-2xl md:text-3xl; }
+  h3 { @apply text-xl md:text-2xl; }
+
+  a {
+    @apply text-secondary hover:text-primary transition-colors duration-200;
+  }
+
+  ::selection {
+    @apply bg-primary text-background;
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply font-display text-sm uppercase tracking-widest text-neutral-light;
+    @apply hover:text-primary transition-all duration-300;
+    @apply relative;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-primary;
+    @apply transition-all duration-300;
+  }
+
+  .nav-link:hover::after,
+  .nav-link-active::after {
+    @apply w-full;
+  }
+
+  .nav-link-active {
+    @apply text-primary;
+  }
+
+  .btn {
+    @apply font-display text-sm uppercase tracking-wider;
+    @apply px-6 py-3 border-2 transition-all duration-300;
+    @apply inline-flex items-center justify-center gap-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-primary border-primary text-background;
+    @apply hover:bg-transparent hover:text-primary;
+    @apply hover:shadow-[0_0_20px_rgba(255,107,53,0.5)];
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border-secondary text-secondary;
+    @apply hover:bg-secondary hover:text-background;
+    @apply hover:shadow-[0_0_20px_rgba(0,229,255,0.5)];
+  }
+
+  .btn-accent {
+    @apply bg-transparent border-accent text-accent;
+    @apply hover:bg-accent hover:text-background;
+    @apply hover:shadow-[0_0_20px_rgba(255,23,68,0.5)];
+  }
+
+  .btn-ghost {
+    @apply bg-transparent border-neutral text-neutral-light;
+    @apply hover:border-text hover:text-text;
+  }
+
+  .card {
+    @apply bg-background-light border-l-4 border-primary p-6;
+    @apply relative overflow-hidden;
+  }
+
+  .card::before {
+    content: '';
+    @apply absolute top-0 left-0 w-full h-full;
+    @apply bg-gradient-to-r from-primary/5 to-transparent;
+    @apply pointer-events-none;
+  }
+
+  .card-secondary {
+    @apply bg-background-light border-l-4 border-secondary p-6;
+    @apply relative overflow-hidden;
+  }
+
+  .card-secondary::before {
+    content: '';
+    @apply absolute top-0 left-0 w-full h-full;
+    @apply bg-gradient-to-r from-secondary/5 to-transparent;
+    @apply pointer-events-none;
+  }
+
+  .card-accent {
+    @apply bg-background-light border-l-4 border-accent p-6;
+    @apply relative overflow-hidden;
+  }
+
+  .terminal-box {
+    @apply bg-background border border-neutral p-4 font-mono text-sm;
+    @apply relative;
+  }
+
+  .terminal-box::before {
+    content: '>';
+    @apply text-primary mr-2;
+  }
+
+  .form-group {
+    @apply mb-4;
+  }
+
+  .form-label {
+    @apply block font-display text-xs uppercase tracking-wider text-neutral-light mb-2;
+  }
+
+  .form-control {
+    @apply w-full bg-background-lighter border-2 border-neutral;
+    @apply px-4 py-3 text-text font-mono;
+    @apply focus:outline-none focus:border-primary;
+    @apply transition-all duration-300;
+    @apply placeholder:text-neutral;
+  }
+
+  .form-control:focus {
+    @apply shadow-[0_0_10px_rgba(255,107,53,0.3)];
+  }
+
+  textarea.form-control {
+    @apply resize-y min-h-[150px];
+  }
+
+  .badge {
+    @apply inline-block px-3 py-1 text-xs font-display uppercase tracking-wider;
+    @apply border;
+  }
+
+  .badge-primary {
+    @apply border-primary text-primary bg-primary/10;
+  }
+
+  .badge-secondary {
+    @apply border-secondary text-secondary bg-secondary/10;
+  }
+
+  .badge-accent {
+    @apply border-accent text-accent bg-accent/10;
+  }
+
+  .badge-success {
+    @apply border-green-500 text-green-500 bg-green-500/10;
+  }
+
+  .status-dot {
+    @apply w-2 h-2 rounded-full inline-block mr-2;
+  }
+
+  .status-online {
+    @apply bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)];
+    animation: pulse 2s infinite;
+  }
+
+  .status-danger {
+    @apply bg-accent shadow-[0_0_8px_rgba(255,23,68,0.6)];
+  }
+
+  .alert {
+    @apply p-4 border-l-4 mb-4 font-mono text-sm;
+  }
+
+  .alert-error {
+    @apply bg-accent/10 border-accent text-accent;
+  }
+
+  .alert-success {
+    @apply bg-green-500/10 border-green-500 text-green-500;
+  }
+
+  .alert-warning {
+    @apply bg-primary/10 border-primary text-primary;
+  }
+
+  .neon-primary {
+    @apply text-primary;
+    text-shadow: 
+      0 0 5px var(--glow-primary),
+      0 0 10px var(--glow-primary),
+      0 0 20px var(--glow-primary);
+  }
+
+  .neon-secondary {
+    @apply text-secondary;
+    text-shadow: 
+      0 0 5px var(--glow-secondary),
+      0 0 10px var(--glow-secondary),
+      0 0 20px var(--glow-secondary);
+  }
+
+  .glitch {
+    @apply relative;
+  }
+
+  .glitch:hover {
+    animation: glitch 0.3s linear infinite;
+  }
+
+  @keyframes glitch {
+    0%, 100% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+  }
+
+  .threat-bar {
+    @apply h-2 bg-neutral-dark overflow-hidden;
+  }
+
+  .threat-bar-fill {
+    @apply h-full transition-all duration-500;
+  }
+
+  .threat-low { @apply bg-green-500 w-1/4; }
+  .threat-medium { @apply bg-primary w-1/2; }
+  .threat-high { @apply bg-accent w-3/4; }
+  .threat-critical { @apply bg-accent w-full animate-pulse; }
+
+  .avatar {
+    @apply w-12 h-12 border-2 border-primary flex items-center justify-center;
+    @apply font-display font-bold text-primary bg-background-lighter;
+  }
+
+  .avatar-sm {
+    @apply w-8 h-8 text-sm;
+  }
+
+  .avatar-lg {
+    @apply w-16 h-16 text-xl;
+  }
+
+  .section-header {
+    @apply flex items-center gap-4 mb-6;
+  }
+
+  .section-header::before,
+  .section-header::after {
+    content: '';
+    @apply flex-1 h-px bg-gradient-to-r from-transparent via-neutral to-transparent;
+  }
+
+  .section-title {
+    @apply font-display text-sm uppercase tracking-widest text-primary;
+  }
+
+  .grid-bg {
+    background-image: 
+      linear-gradient(rgba(255, 107, 53, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 107, 53, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  .typing-cursor::after {
+    content: '_';
+    @apply animate-blink;
+  }
+
+  .floating-dot {
+    @apply absolute w-1 h-1 rounded-full bg-secondary opacity-60;
+    animation: float 6s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent;
+  }
+
+  .text-gradient-secondary {
+    @apply bg-gradient-to-r from-secondary via-primary to-secondary bg-clip-text text-transparent;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in-slow {
+    animation: fadeIn 1s ease-out;
+  }
+
+  .animate-fade-in-delay-1 {
+    animation: fadeIn 0.5s ease-out 0.3s both;
+  }
+
+  .animate-fade-in-delay-2 {
+    animation: fadeIn 0.5s ease-out 0.6s both;
+  }
+
+  .animate-fade-in-delay-3 {
+    animation: fadeIn 0.5s ease-out 0.9s both;
+  }
+
+  .animate-fade-in-delay-4 {
+    animation: fadeIn 0.5s ease-out 1.2s both;
+  }
+}
+
+@media (max-width: 768px) {
+  h1 { @apply text-2xl; }
+  h2 { @apply text-xl; }
+  h3 { @apply text-lg; }
+  
+  .btn {
+    @apply px-4 py-2 text-xs;
+  }
+}

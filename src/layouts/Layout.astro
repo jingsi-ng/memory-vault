@@ -1,0 +1,143 @@
+---
+import '../styles/main.css';
+import { supabase } from '../lib/supabaseClient';
+
+interface Props {
+    title: string;
+}
+
+const { title } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+const { data: { session } } = await supabase.auth.getSession();
+const user = session?.user;
+
+let keeper = null;
+if (user) {
+  const { data } = await supabase
+    .from('keeper_profiles')
+    .select('keeper_name, assigned_book')
+    .eq('id', user.id)
+    .single();
+  keeper = data;
+}
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+  <title>{title} | Project 451</title>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+  <div class="fixed inset-0 pointer-events-none z-[9999]" style="background: repeating-linear-gradient(0deg, rgba(0,0,0,0.03), rgba(0,0,0,0.03) 1px, transparent 1px, transparent 2px);"></div>
+
+  <header class="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-neutral/30">
+    <div class="max-w-7xl mx-auto px-4 md:px-8">
+      <div class="flex justify-between items-center h-16">
+        <a href="/home" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 border-2 border-primary flex items-center justify-center transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(255,107,53,0.5)]">
+            <span class="text-primary font-display font-black text-xl">451</span>
+          </div>
+          <div class="hidden sm:block">
+            <div class="font-display text-xs text-neutral-light tracking-widest">PROJECT</div>
+            <div class="font-display text-lg font-bold neon-primary tracking-wider">MEMORY VAULT</div>
+          </div>
+        </a>
+
+        <nav class="hidden md:block">
+          <ul class="flex gap-6 items-center">
+            <li>
+              <a href="/home" class={`nav-link ${currentPath === '/home' ? 'nav-link-active' : ''}`}>THE HEARTH</a>
+            </li>
+            <li>
+              <a href="/posts" class={`nav-link ${currentPath.startsWith('/posts') && currentPath !== '/posts/new' ? 'nav-link-active' : ''}`}>THE LIBRARY</a>
+            </li>
+            {user && (
+              <li>
+                <a href="/posts/new" class={`nav-link ${currentPath === '/posts/new' ? 'nav-link-active' : ''}`}>PRESERVE</a>
+              </li>
+            )}
+            {user && (
+              <li>
+                <a href="/profile" class={`nav-link ${currentPath === '/profile' ? 'nav-link-active' : ''}`}>DOSSIER</a>
+              </li>
+            )}
+            <li>
+              {user ? (
+                <div class="flex items-center gap-4">
+                  <span class="text-xs font-mono text-neutral-light">
+                    <span class="status-dot status-online"></span>
+                    {keeper?.keeper_name || 'KEEPER'}
+                  </span>
+                  <a href="/auth/logout" class="btn btn-ghost text-xs px-3 py-1">DISCONNECT</a>
+                </div>
+              ) : (
+                <a href="/auth/login" class="btn btn-secondary text-xs px-4 py-2">SYSTEM ACCESS</a>
+              )}
+            </li>
+          </ul>
+        </nav>
+
+        <button id="mobile-menu-btn" class="md:hidden text-primary p-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="hidden md:hidden pb-4 border-t border-neutral/30 mt-2 pt-4">
+        <ul class="space-y-3">
+          <li><a href="/home" class="nav-link block py-2">THE HEARTH</a></li>
+          <li><a href="/posts" class="nav-link block py-2">THE LIBRARY</a></li>
+          {user && <li><a href="/posts/new" class="nav-link block py-2">PRESERVE TEXT</a></li>}
+          {user && <li><a href="/profile" class="nav-link block py-2">YOUR DOSSIER</a></li>}
+          <li class="pt-2 border-t border-neutral/30">
+            {user ? (
+              <a href="/auth/logout" class="nav-link block py-2 text-accent">DISCONNECT</a>
+            ) : (
+              <a href="/auth/login" class="nav-link block py-2">SYSTEM ACCESS</a>
+            )}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12 w-full">
+    <slot />
+  </main>
+
+  <footer class="border-t border-neutral/30 py-8 bg-background-light">
+    <div class="max-w-7xl mx-auto px-4 md:px-8">
+      <div class="terminal-box mb-6">
+        <span class="text-neutral-light">WARNING:</span> 
+        <span class="text-text-muted">This site is monitored. If you are not a registered Keeper, exit now.</span>
+      </div>
+      
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
+        <div class="text-center md:text-left">
+          <p class="text-neutral-light font-mono text-xs">2077 PROJECT 451: THE MEMORY VAULT | &copy; 2025 Chen See Ng</p>
+          <p class="text-neutral text-xs mt-1 italic">"They burned the books. We became them."</p>
+        </div>
+        <div class="text-xs text-neutral font-mono">
+          <span class="text-primary">CLASSIFIED SYSTEM</span> | v4.51.77
+        </div>
+      </div>
+    </div>
+  </footer>
+  
+  <script>
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuBtn?.addEventListener('click', () => {
+      mobileMenu?.classList.toggle('hidden');
+    });
+  </script>
+</body>
+</html>

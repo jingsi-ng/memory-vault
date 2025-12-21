@@ -4,73 +4,80 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: {
-            DEFAULT: '#ff6b35', 
-            dark: '#e55a2b', 
-            light: '#ff8555',},
-        secondary: {
-            DEFAULT: '#00e5ff',
-            dark: '#00b4cc',
-            light: '#33ebff',
+        'primary': {
+          DEFAULT: '#FF6B35',
+          light: '#FF8C5A',
+          dark: '#E55A2B',
         },
-        accent: {
-            DEFAULT: '#ff1744',
-            dark: '#cc1236',
-            light: '#ff4569',
+        'secondary': {
+          DEFAULT: '#00E5FF',
+          light: '#6EFFFF',
+          dark: '#00B8D4',
         },
-        neutral: {
-            900: '#0d0d0d',
-            800: '#1a1a1a',
-            700: '#2d2d2d',
-            600: '#404040',
-            500: '#6b7280',
-            400: '#9ca3af',
-            300: '#d1d5db',
-            200: '#e5e7eb',
-            100: '#f3f4f6',
-            50: '#f9fafb',
+        'accent': {
+          DEFAULT: '#FF1744',
+          light: '#FF4569',
+          dark: '#D50032',
         },
-        background: {
-            DEFAULT: '#0d0d0d',
-            elevated: '#1a1a1a',
-            overlay: 'rgba(0, 0, 0, 0.5)',
+        'background': {
+          DEFAULT: '#0D0D0D',
+          light: '#1A1A1A',
+          lighter: '#252525',
         },
-        surface: {
-            DEFAULT: 'rgba(255, 255, 255, 0.03)',
-            hover: 'rgba(255, 255, 255, 0.05)',
+        'text': {
+          DEFAULT: '#F5F1E8',
+          muted: '#A0998A',
+          dark: '#4A5568',
         },
-        border: {
-            DEFAULT: 'rgba(255, 107, 53, 0.2)',
-            focus: '#ff6b35',
-        },
-        text: {
-            primary: '#f5f1e8',
-            secondary: '#9ca3af',
-            muted: '#6b7280',
-        },
-        status: {
-            success: '#00e5ff',
-            warning: '#fbbf24',
-            error: '#ff1744',
-            info: '#00b4ff',
+        'neutral': {
+          DEFAULT: '#4A5568',
+          light: '#718096',
+          dark: '#2D3748',
         },
       },
-       fontFamily: {
-        mono: ['"Courier Prime"', 'monospace'],
-        display: ['Orbitron', 'monospace'],
+      fontFamily: {
+        'display': ['Orbitron', 'Consolas', 'Monaco', 'sans-serif'],
+        'mono': ['"JetBrains Mono"', '"Courier Prime"', '"Courier New"', 'monospace'],
+        'body': ['"Courier Prime"', '"Courier New"', 'monospace'],
       },
       animation: {
-            'fade-in': 'fade-in 0.3s ease-out',
-            'slide-up': 'slide-up 0.5s ease-out',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'flicker': 'flicker 0.15s infinite',
+        'scan': 'scan 8s linear infinite',
+        'glow': 'glow 2s ease-in-out infinite alternate',
+        'typing': 'typing 3.5s steps(40, end)',
+        'blink': 'blink 1s step-end infinite',
+        'float': 'float 6s ease-in-out infinite',
+        'burn': 'burn 2s ease-in-out infinite',
       },
       keyframes: {
-            'fade-in': {
-            '0%': { opacity: '0' },
-            '100%': { opacity: '1' },
+        flicker: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.8' },
         },
-        'slide-up': {
-            '0%': { transform: 'translateY(20px)', opacity: '0' },
-            '100%': { transform: 'translateY(0)', opacity: '1' },
+        scan: {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(100%)' },
+        },
+        glow: {
+          '0%': { boxShadow: '0 0 5px rgba(255, 107, 53, 0.4), 0 0 10px rgba(255, 107, 53, 0.3)' },
+          '100%': { boxShadow: '0 0 10px rgba(255, 107, 53, 0.6), 0 0 20px rgba(255, 107, 53, 0.4), 0 0 30px rgba(255, 107, 53, 0.2)' },
+        },
+        typing: {
+          'from': { width: '0' },
+          'to': { width: '100%' },
+        },
+        blink: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        burn: {
+          '0%, 100%': { textShadow: '0 0 4px #FF6B35, 0 0 8px #FF6B35' },
+          '50%': { textShadow: '0 0 8px #FF1744, 0 0 16px #FF1744, 0 0 24px #FF1744' },
         },
       },
     },
