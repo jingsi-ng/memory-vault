@@ -1,0 +1,153 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabaseClient';
+
+const { data: { session } } = await supabase.auth.getSession();
+if (!session) {
+  return Astro.redirect('/auth/login');
+}
+
+const classifications = [
+  { value: 'DYSTOPIA', label: 'DYSTOPIA - Anti-utopian archives' },
+  { value: 'PHILOSOPHY', label: 'PHILOSOPHY - Wisdom texts' },
+  { value: 'CYBERPUNK', label: 'CYBERPUNK - Future visions' },
+  { value: 'FORBIDDEN', label: 'FORBIDDEN - Banned literature' },
+  { value: 'CLASSIC', label: 'CLASSIC - Timeless works' },
+];
+
+let errorMessage = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const bookTitle = formData.get('book_title') as string;
+    const originalAuthor = formData.get('original_author') as string;
+    const textFragment = formData.get('text_fragment') as string;
+    const classification = formData.get('classification') as string;
+
+    if (!bookTitle || !textFragment) {
+      throw new Error('Title and text fragment are required');
+    }
+
+    const { data, error } = await supabase
+      .from('preserved_texts')
+      .insert([{
+        keeper_id: session.user.id,
+        book_title: bookTitle,
+        original_author: originalAuthor || null,
+        text_fragment: textFragment,
+        classification: classification || 'CLASSIFIED',
+        burn_status: 'SAVED'
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return Astro.redirect(`/posts/${data.id}`);
+
+  } catch (error: any) {
+    errorMessage = error.message || 'Failed to preserve text';
+  }
+}
+---
+
+<Layout title="PRESERVE A TEXT">
+
+  <div class="max-w-3xl mx-auto">
+    <div class="mb-8">
+      <a href="/posts" class="inline-flex items-center gap-2 text-neutral-light hover:text-secondary transition-colors mb-4 font-mono text-sm">
+        ← BACK TO LIBRARY
+      </a>
+      <div class="font-mono text-xs text-primary mb-2">[UPLOAD_FRAGMENT]</div>
+      <h1 class="text-3xl md:text-4xl mb-2">PRESERVE A TEXT</h1>
+      <p class="text-neutral-light font-mono text-sm">
+        Upload a fragment of forbidden knowledge to the vault.
+      </p>
+    </div>
+
+    {errorMessage && (
+      <div class="alert alert-error">
+        <span class="font-mono text-xs">[ERROR]</span> {errorMessage}
+      </div>
+    )}
+
+    <div class="card">
+      <form method="POST" class="space-y-6">
+        <div class="form-group">
+          <label for="book_title" class="form-label">
+            <span class="text-primary">›</span> BOOK TITLE <span class="text-accent">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="book_title" 
+            name="book_title" 
+            class="form-control"
+            placeholder="e.g., Fahrenheit 451"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="original_author" class="form-label">
+            <span class="text-primary">›</span> ORIGINAL AUTHOR
+          </label>
+          <input 
+            type="text" 
+            id="original_author" 
+            name="original_author" 
+            class="form-control"
+            placeholder="e.g., Ray Bradbury"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="classification" class="form-label">
+            <span class="text-primary">›</span> CLASSIFICATION
+          </label>
+          <select id="classification" name="classification" class="form-control">
+            <option value="">Select classification...</option>
+            {classifications.map(c => (
+              <option value={c.value}>{c.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="text_fragment" class="form-label">
+            <span class="text-primary">›</span> TEXT FRAGMENT <span class="text-accent">*</span>
+          </label>
+          <textarea 
+            id="text_fragment" 
+            name="text_fragment" 
+            class="form-control"
+            rows="12"
+            placeholder="Enter the text you wish to preserve for future generations..."
+            required
+          ></textarea>
+          <p class="text-xs text-neutral mt-2">
+            This is your analysis, commentary, or excerpt from the work.
+          </p>
+        </div>
+
+        <div class="border-t border-neutral/30 pt-6">
+          <div class="terminal-box mb-6 text-xs">
+            <span class="text-primary">WARNING:</span> 
+            <span class="text-neutral">Once preserved, this text will be protected in the vault. 
+            Only you can modify or destroy it.</span>
+          </div>
+
+          <div class="flex gap-4">
+            <button type="submit" class="btn btn-primary flex-1 glitch">
+              PRESERVE TEXT →
+            </button>
+            <a href="/posts" class="btn btn-ghost">
+              CANCEL
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</Layout>

@@ -1,0 +1,127 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabaseClient';
+
+const { data: texts, error } = await supabase
+  .from('preserved_texts')
+  .select(`
+    *,
+    keeper_profiles (
+      keeper_name
+    )
+  `)
+  .order('preservation_date', { ascending: false });
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0].replace(/-/g, '.');
+}
+
+function getBadgeClass(classification: string) {
+  switch(classification?.toUpperCase()) {
+    case 'DYSTOPIA': return 'badge-accent';
+    case 'PHILOSOPHY': return 'badge-secondary';
+    case 'CYBERPUNK': return 'badge-primary';
+    case 'FORBIDDEN': return 'badge-accent';
+    default: return 'badge-primary';
+  }
+}
+---
+
+<Layout title="THE LIBRARY">
+
+  <div class="mb-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div class="font-mono text-xs text-neutral mb-2">[ARCHIVE_INDEX]</div>
+        <h1 class="text-3xl md:text-4xl">THE LIBRARY</h1>
+        <p class="text-neutral-light mt-2 font-mono text-sm">
+          All preserved texts in the vault
+        </p>
+      </div>
+      <a href="/posts/new" class="btn btn-primary">
+        PRESERVE NEW TEXT
+      </a>
+    </div>
+  </div>
+  <div class="card-secondary mb-8">
+    <div class="flex flex-wrap gap-6 text-center md:text-left">
+      <div>
+        <div class="text-xs font-display text-neutral-light uppercase">Total Texts</div>
+        <div class="text-2xl font-display text-primary">{texts?.length || 0}</div>
+      </div>
+      <div>
+        <div class="text-xs font-display text-neutral-light uppercase">Archive Status</div>
+        <div class="text-lg font-display text-green-500">
+          <span class="status-dot status-online"></span> SECURE
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {texts && texts.length > 0 ? (
+    <div class="space-y-6">
+      {texts.map((text, index) => (
+        <article class="card group hover:border-secondary transition-all duration-300">
+          <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+            <div class="flex-1">
+              <div class="flex flex-wrap items-center gap-3 mb-2">
+                <span class="font-mono text-xs text-neutral">[FILE_{String(index + 1).padStart(3, '0')}]</span>
+                <span class={`badge ${getBadgeClass(text.classification)}`}>
+                  {text.classification || 'CLASSIFIED'}
+                </span>
+                {text.burn_status === 'ENDANGERED' && (
+                  <span class="badge badge-accent animate-pulse">ENDANGERED</span>
+                )}
+              </div>
+              <h2 class="text-xl md:text-2xl group-hover:text-primary transition-colors">
+                <a href={`/posts/${text.id}`}>
+                  {text.book_title}
+                </a>
+              </h2>
+              {text.original_author && (
+                <p class="text-neutral-light text-sm mt-1">Original Author: {text.original_author}</p>
+              )}
+            </div>
+            
+            <div class="text-xs text-neutral font-mono text-right">
+              <div>Preserved: {formatDate(text.preservation_date)}</div>
+              {text.last_revision && text.last_revision !== text.preservation_date && (
+                <div class="text-primary">Modified: {formatDate(text.last_revision)}</div>
+              )}
+            </div>
+          </div>
+          
+          <div class="border-l-2 border-neutral pl-4 mb-4">
+            <p class="text-text-muted leading-relaxed font-body italic">
+              "{text.text_fragment?.substring(0, 250)}..."
+            </p>
+          </div>
+          
+          <div class="flex items-center justify-between pt-4 border-t border-neutral/30">
+            <div class="flex items-center gap-3">
+              <div class="avatar avatar-sm">
+                {text.keeper_profiles?.keeper_name?.charAt(0).toUpperCase() || 'K'}
+              </div>
+              <div class="text-sm">
+                <div class="text-xs text-neutral uppercase tracking-wider">Keeper</div>
+                <div class="text-secondary font-mono">{text.keeper_profiles?.keeper_name || 'ANONYMOUS'}</div>
+              </div>
+            </div>
+            <a href={`/posts/${text.id}`} class="btn btn-ghost text-xs">
+              READ FULL TEXT →
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
+  ) : (
+    <div class="card text-center py-16">
+      <h3 class="text-2xl mb-4">The Library is Empty</h3>
+      <p class="text-neutral-light mb-6 max-w-md mx-auto">
+        All texts have been burned. Be the first Memory Keeper to preserve forbidden knowledge.
+      </p>
+      <a href="/posts/new" class="btn btn-primary">PRESERVE YOUR FIRST TEXT</a>
+    </div>
+  )}
+</Layout>

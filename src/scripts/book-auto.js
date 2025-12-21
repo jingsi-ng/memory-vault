@@ -2,10 +2,19 @@ const bookSuggestions = [
   'Fahrenheit 451 - Ray Bradbury',
   '1984 - George Orwell',
   'Brave New World - Aldous Huxley',
-  'Flatland: A Romance of Many Dimensions - Edwin A. Abbott',
+  'Snow Crash - Neal Stephenson',
   "Neuromancer - William Gibson",
   'Do Androids Dream of Electric Sheep? - Philip K. Dick',
-  'We - Yevgeny Zamyatin',
+  'Flatland: A Romance of Many Dimensions - Edwin A. Abbott',
+  'To Kill a Mockingbird - Harper Lee',
+  'Pride and Prejudice - Jane Austen',
+  'Siddhartha - Hermann Hesse',
+  'The Myth of Sisyphus - Albert Camus',
+  'Tao Te Ching - Lao Tzu',
+  'A Clockwork Orange - Anthony Burgess',
+  'Ulysses - James Joyce',
+  'Slaughterhouse-Five - Kurt Vonnegut',
+
 ];
 
 function initBookAutocomplete() {

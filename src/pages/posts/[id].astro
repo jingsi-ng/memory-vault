@@ -1,0 +1,217 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabaseClient';
+
+const { id } = Astro.params;
+
+const { data: { session } } = await supabase.auth.getSession();
+const user = session?.user;
+
+const { data: text, error: textError } = await supabase
+  .from('preserved_texts')
+  .select(`
+    *,
+    keeper_profiles (
+      keeper_name,
+      assigned_book
+    )
+  `)
+  .eq('id', id)
+  .single();
+
+if (textError || !text) {
+  return Astro.redirect('/posts');
+}
+
+const { data: whispers } = await supabase
+  .from('whispers')
+  .select(`
+    *,
+    keeper_profiles (
+      keeper_name
+    )
+  `)
+  .eq('text_id', id)
+  .order('whispered_at', { ascending: true });
+
+let whisperError = '';
+if (Astro.request.method === 'POST' && user) {
+  try {
+    const formData = await Astro.request.formData();
+    const message = formData.get('message') as string;
+
+    if (!message || message.trim().length === 0) {
+      throw new Error('Message cannot be empty');
+    }
+
+    const { error } = await supabase
+      .from('whispers')
+      .insert([{
+        text_id: parseInt(id as string),
+        whisperer_id: user.id,
+        message: message.trim()
+      }]);
+
+    if (error) throw error;
+
+    return Astro.redirect(`/posts/${id}`);
+
+  } catch (error: any) {
+    whisperError = error.message;
+  }
+}
+
+const isKeeper = user && text.keeper_id === user.id;
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toISOString().replace('T', ' ').substring(0, 16).replace(/-/g, '.');
+}
+
+function getBadgeClass(classification: string) {
+  switch(classification?.toUpperCase()) {
+    case 'DYSTOPIA': return 'badge-accent';
+    case 'PHILOSOPHY': return 'badge-secondary';
+    case 'CYBERPUNK': return 'badge-primary';
+    case 'FORBIDDEN': return 'badge-accent';
+    default: return 'badge-primary';
+  }
+}
+---
+
+<Layout title={text.book_title}>
+
+  <article class="max-w-4xl mx-auto">
+    <a href="/posts" class="inline-flex items-center gap-2 text-neutral-light hover:text-secondary transition-colors mb-6 font-mono text-sm">
+      ← BACK TO LIBRARY
+    </a>
+
+    <header class="card mb-8">
+      <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+        <div>
+          <div class="flex items-center gap-3 mb-3">
+            <span class="font-mono text-xs text-neutral">[FILE_{String(text.id).padStart(3, '0')}]</span>
+            <span class={`badge ${getBadgeClass(text.classification)}`}>
+              {text.classification || 'CLASSIFIED'}
+            </span>
+            <span class={`badge ${text.burn_status === 'ENDANGERED' ? 'badge-accent' : 'badge-safe'}`}>
+              {text.burn_status || 'SAVED'}
+            </span>
+          </div>
+          <h1 class="text-3xl md:text-4xl mb-2">{text.book_title}</h1>
+          {text.original_author && (
+            <p class="text-neutral-light">Original Author: <span class="text-secondary">{text.original_author}</span></p>
+          )}
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-4 text-xs font-mono text-neutral border-t border-neutral/30 pt-4 mt-4">
+        <span>Preserved: {formatDate(text.preservation_date)}</span>
+        {text.last_revision && text.last_revision !== text.preservation_date && (
+          <span class="text-primary">Modified: {formatDate(text.last_revision)}</span>
+        )}
+      </div>
+
+      {isKeeper && (
+        <div class="flex gap-3 mt-4 pt-4 border-t border-neutral/30">
+          <a href={`/posts/${id}/edit`} class="btn btn-secondary text-xs">EDIT FILE</a>
+          <a href={`/posts/${id}/delete`} class="btn btn-accent text-xs">DESTROY FILE</a>
+        </div>
+      )}
+    </header>
+
+    <div class="card-secondary mb-8">
+      <div class="font-display text-xs text-neutral-light uppercase tracking-wider mb-4">
+        ▓▓ PRESERVED TEXT FRAGMENT ▓▓
+      </div>
+      <div class="text-text leading-relaxed font-body text-lg whitespace-pre-wrap">
+        {text.text_fragment}
+      </div>
+    </div>
+
+    <div class="card mb-12">
+      <div class="flex items-center gap-4">
+        <div class="avatar avatar-lg">
+          {text.keeper_profiles?.keeper_name?.charAt(0).toUpperCase() || 'K'}
+        </div>
+        <div>
+          <div class="text-xs text-neutral uppercase tracking-wider font-display">Memory Keeper</div>
+          <div class="text-xl text-secondary font-mono">{text.keeper_profiles?.keeper_name || 'ANONYMOUS'}</div>
+          {text.keeper_profiles?.assigned_book && (
+            <div class="text-xs text-neutral-light mt-1">
+              Assigned: {text.keeper_profiles.assigned_book}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <section class="border-t border-neutral/30 pt-8">
+      <div class="section-header">
+        <span class="section-title">TRANSMISSION LOG ({whispers?.length || 0})</span>
+      </div>
+
+      {user ? (
+        <div class="card mb-8">
+          <div class="font-display text-xs text-neutral-light uppercase tracking-wider mb-4">
+            Send Transmission
+          </div>
+          <form method="POST">
+            <div class="form-group mb-4">
+              <textarea 
+                id="message" 
+                name="message" 
+                class="form-control"
+                rows="3"
+                placeholder="Your signal..."
+                required
+              ></textarea>
+            </div>
+            {whisperError && (
+              <p class="text-accent text-sm mb-4 font-mono">[ERROR] {whisperError}</p>
+            )}
+            <button type="submit" class="btn btn-secondary">
+              TRANSMIT →
+            </button>
+          </form>
+        </div>
+      ) : (
+        <div class="card text-center py-6 mb-8">
+          <p class="text-neutral-light mb-4 font-mono text-sm">
+            Authentication required to send transmissions.
+          </p>
+          <a href="/auth/login" class="btn btn-primary">SYSTEM ACCESS</a>
+        </div>
+      )}
+
+      {whispers && whispers.length > 0 ? (
+        <div class="space-y-4">
+          {whispers.map((whisper) => (
+            <div class="card-secondary">
+              <div class="flex items-start gap-4">
+                <div class="avatar avatar-sm flex-shrink-0">
+                  {whisper.keeper_profiles?.keeper_name?.charAt(0).toUpperCase() || 'K'}
+                </div>
+                <div class="flex-1">
+                  <div class="flex flex-wrap items-center gap-3 mb-2">
+                    <span class="text-secondary font-mono text-sm">
+                      {whisper.keeper_profiles?.keeper_name || 'ANONYMOUS'}
+                    </span>
+                    <span class="text-xs text-neutral font-mono">
+                      {formatDate(whisper.whispered_at)}
+                    </span>
+                  </div>
+                  <p class="text-text-muted leading-relaxed">{whisper.message}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-8 text-neutral font-mono">
+          <p>No transmissions received. Be the first to respond.</p>
+        </div>
+      )}
+    </section>
+  </article>
+</Layout>
