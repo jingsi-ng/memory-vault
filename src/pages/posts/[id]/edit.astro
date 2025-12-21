@@ -1,0 +1,140 @@
+---
+import { callSafely } from 'astro:actions';
+import Layout from '../../../layouts/Layout.astro';
+import { supabase } from'../../../lib/supabaseClient';
+
+const { id } = Astro.params;
+
+const { data: { session } } = await supabase.auth.getSession();
+if (!session) {
+    return Astro.redirect('/auth/login');
+}
+
+const { data: text, error: textError } = await supabase
+    .from('preserved_texts')
+    .select('*')
+    .eq('id',id)
+    .single();
+
+if (textError || !text) {
+    return Astro.redirect('/posts');
+}    
+
+if (text.keeper_id !== session.user.id) {
+    return Astro.redirect(`/posts/${id}`);
+}
+
+const classifications = [
+    { value: 'DYSTOPIA', label: 'DYSTOPIA' },
+    { value: 'PHILOSOPHY', label: 'PHYLOSOPHY' },
+    { value: 'CYBERPUNK', label: 'CYBERPUNK' },
+    { value: 'FORBIDDEN', label: 'FORBIDDEN' },
+    { value: 'CLASSIC', label: 'CLASSIC' },
+];
+
+let errorMessage = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const bookTitle = formData.get('book_title') as string;
+    const originalAuthor = formData.get('original_author') as string;
+    const textFragment = formData.get('text_fragment') as string;
+    const classification = formData.get('classification') as string;
+
+    if (!bookTitle || !textFragment) {
+      throw new Error('Title and text fragment are required');
+    }
+
+    const { error } = await supabase
+      .from('preserved_texts')
+      .update({
+        book_title: bookTitle,
+        original_author: originalAuthor || null,
+        text_fragment: textFragment,
+        classification: classification || text.classification,
+        last_revision: new Date().toISOString()
+      })
+      .eq('id',id);
+
+    if (error) throw error;
+
+    return Astro.redirect(`/posts/${id}`);
+
+  } catch (error: any) {
+    errorMessage = error.message || 'Failed to update text';
+  }
+}
+---
+
+<Layout title="EDIT FILE">
+    <div class="max-w-3xl mx-auto">
+        <a href={`/posts/${id}`} class="inline-flex items-center gap-2 text-neutral-light hover:text-secondary transition-colors mb-6 font-mono text-sm">
+        ← BACK TO FILE</a>
+        <div class="mb-8">
+            <div class="font-mono text-xs text-primary mb-2">[MODIFY_FILE_{String(id).padStart(3, '0')}]</div>
+            <h1 class="text-3xl md:text-4xl mb-2">EDIT PRESERVED TETX</h1>
+        </div>
+
+        {errorMessage && (
+            <div class="alert alert-error">
+                <span class="font-mono text-xs">[ERROR]</span> {errorMessage}
+            </div>
+        )}
+
+        <div class="card">
+            <form method="POST" class="space-y-6">
+                <div class="form-group">
+                    <label for="book_title" class="form-label">
+                        <span class="text-primary"> > </span> BOOK TITLE <span class="text-accent"> * </span>
+                    </label>
+                    <input
+                    type="text"
+                    id="book_title"
+                    name="book_title"
+                    class="form-control"
+                    value={text.book_title}
+                    required
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="original_author" class="form-label">
+                        <span class="text-primary"> > </span> ORIGINAL AUTHOR 
+                    </label>
+                    <input
+                    type="text"
+                    id="original_author"
+                    name="original_author"
+                    class="form-control"
+                    value={text.original_author || ''}
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="classification" class="form-label">
+                        <span class="text-primary"> > </span> CLASSIFICATION 
+                    </label>
+                    <select id="classification" name="classification" class="form-control">
+                        {classifications.map(c => (
+                            <option value={c.value} selected={text.classification === c.value}>
+                                {c.label}
+                            </option>
+                        ))}
+                    </select> 
+                </div>
+                <div class="form-group">
+                    <label for="text_fragment" class="form-label">
+                        <span class="text-primary"> > </span> TEXT FRAGMENT <span class="text-accent"> * </span>
+                    </label>
+                    <textarea id="text_fragment" name="text_fragment" class="form-control" rows="12" required>
+                        {text.text_fragment}
+                    </textarea>
+                </div>
+                <div class="border-t border-neutral/30 pt-6 flex gap-4">
+                    <button type="submit" class="btn btn-primary flex-1">SAVE CHANGES</button>
+                    <a href={`/posts/${id}`} class="btn btn-ghost">CANCEL</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</Layout>
