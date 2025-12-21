@@ -1,5 +1,4 @@
 ---
-import { callSafely } from 'astro:actions';
 import Layout from '../../../layouts/Layout.astro';
 import { supabase } from'../../../lib/supabaseClient';
 
@@ -13,7 +12,7 @@ if (!session) {
 const { data: text, error: textError } = await supabase
     .from('preserved_texts')
     .select('*')
-    .eq('id',id)
+    .eq('id', id)
     .single();
 
 if (textError || !text) {
@@ -55,7 +54,7 @@ if (Astro.request.method === 'POST') {
         classification: classification || text.classification,
         last_revision: new Date().toISOString()
       })
-      .eq('id',id);
+      .eq('id', id);
 
     if (error) throw error;
 

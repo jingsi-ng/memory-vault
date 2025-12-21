@@ -1,0 +1,93 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { supabase } from'../../../lib/supabaseClient';
+
+const { id } = Astro.params;
+
+const { data: { session } } = await supabase.auth.getSession();
+if (!session) {
+    return Astro.redirect('/auth/login');
+}
+
+const { data: text, error: textError } = await supabase
+    .from('preserved_texts')
+    .select('*')
+    .eq('id',id)
+    .single();
+
+if (textError || !text) {
+    return Astro.redirect('/posts');
+}    
+
+if (text.keeper_id !== session.user.id) {
+    return Astro.redirect(`/posts/${id}`);
+}
+
+let errorMessage = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    await supabase
+        .from('whispers')
+        .delete()
+        .eq('text_id', id);
+
+    const { error } = await supabase
+        .from('preserved_texts')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
+
+    return Astro.redirect(`/posts/${id}`);
+
+  } catch (error: any) {
+    errorMessage = error.message || 'Failed to destroy file';
+  }
+}
+---
+
+<Layout title="DESTROY FILE">
+    <div class="max-w-2xl mx-auto">
+        <a href={`/posts/${id}`} class="inline-flex items-center gap-2 text-neutral-light hover:text-secondary transition-colors mb-6 font-mono text-sm">
+        ← BACK TO FILE</a>
+
+        <div class="card-accent">
+            <div class="text-center mb-8">
+                <div class="text-6xl mb-4 animate-burn">🔥</div>
+                <div class="font-mono text-xs text-accent mb-2">[WARNING: IRREVERSIBLE ACTION]</div>
+                <h1 class="text-3xl mb-4 text-accent">DESTROY THE FILE?</h1>
+                <p class="text-neutral-light leading-relaxed max-w-md mx-auto">
+                    This action cannot be undone. The preserved text and all transmissions will be permanently erased from the vault.
+                </p>
+            </div>
+            <div class="bg-background p-4 border-r-2 border-accent mb-6">
+                <div class="font-mono text-xs text-neutral mb-2">[FILE_PREVIEW]</div>
+                <h3 class="text-lg text-primary mb-2">{text.book_title}</h3>
+                {text.original_author && (
+                    <p class="text-neutral-light text-sm mb-2">by {text.original_author}</p>
+                )}
+                <p class="text-text-muted text-sm italic">"{text.text_fragment?.substring(0, 150)}..."</p>
+            </div>
+
+            {errorMessage && (
+                <div class="alert alert-error">
+                    <span class="font-mono text-xs">[ERROR]</span>{errorMessage}
+                </div>
+            )}
+
+            <div class="terminal-box mb-6 text-xs">
+                <span class="text-accent">FINAL WARNING:</span>
+                <span class="text-neutral-light">Like the fireman of old, this action will permanently destroy knowledge. Are you certain this is what you want?</span>
+            </div>
+
+            <form method="POST">
+                <div class="flex gap-4">
+                    <button type="submit" class="btn btn-accent flex-1 glitch">YES, BURN IT</button>
+                    <a href={`/posts/${id}`} class="btn btn-ghost flex-1 text-center">PRESERVE IR</a>
+                </div>
+            </form>
+    </div>
+    </div>
+
+</Layout>
