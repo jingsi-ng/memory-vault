@@ -1,0 +1,201 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabaseClient';
+
+let errorMessage = '';
+let successMessage = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
+    const keeperName = formData.get('keeper_name') as string;
+    const assignedBook = formData.get('assigned_book') as string;
+
+    if (!email || !password || !keeperName) {
+      throw new Error('All required fields must be filled');
+    }
+
+    if (password !== confirmPassword) {
+      throw new Error('Encrypted keys do not match');
+    }
+
+    if (password.length < 6) {
+      throw new Error('Encrypted key must be at least 6 characters');
+    }
+
+    if (keeperName.length < 3) {
+      throw new Error('Keeper name must be at least 3 characters');
+    }
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          keeper_name: keeperName
+        }
+      }
+    });
+
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Registration failed');
+
+    const { error: profileError } = await supabase
+      .from('keeper_profiles')
+      .insert([{
+        id: authData.user.id,
+        keeper_name: keeperName,
+        assigned_book: assignedBook || null
+      }]);
+
+    if (profileError && !profileError.message.includes('duplicate')) {
+      console.error('Profile error:', profileError);
+    }
+
+    successMessage = 'Registration complete. Check your email to verify your identity.';
+
+  } catch (error: any) {
+    errorMessage = error.message || 'Registration failed';
+  }
+}
+---
+
+<Layout title="BECOME A KEEPER">
+  <div class="max-w-lg mx-auto mt-8">
+    <div class="text-center mb-8">
+      <div class="text-5xl font-display font-black text-primary mb-4">451</div>
+      <h1 class="text-2xl mb-2">BECOME A MEMORY KEEPER</h1>
+      <p class="text-neutral-light font-mono text-sm italic">
+        "Are you ready to become a keeper?"
+      </p>
+    </div>
+
+    {errorMessage && (
+      <div class="alert alert-error">
+        <span class="font-mono text-xs">[ERROR]</span> {errorMessage}
+      </div>
+    )}
+
+    {successMessage && (
+      <div class="alert alert-success">
+        <span class="font-mono text-xs">[SUCCESS]</span> {successMessage}
+        <a href="/auth/login" class="btn btn-secondary text-xs mt-3 inline-block">
+          PROCEED TO ACCESS →
+        </a>
+      </div>
+    )}
+
+    <div class="card" style="overflow: visible">
+      <div class="border border-primary p-4 mb-6">
+        <div class="font-display text-xs text-neutral-light uppercase tracking-widest mb-2 text-center">
+          Warning
+        </div>
+        <p class="text-text-muted text-sm text-center font-mono">
+          By registering, you accept the responsibility of preserving forbidden knowledge.
+          There is no turning back.
+        </p>
+      </div>
+
+      <form method="POST" class="space-y-5">
+        <div class="form-group">
+          <label for="keeper_name" class="form-label">
+            <span class="text-primary">›</span> KEEPER NAME
+          </label>
+          <input 
+            type="text" 
+            id="keeper_name" 
+            name="keeper_name" 
+            class="form-control"
+            placeholder="Choose your codename"
+            required
+            minlength="3"
+          />
+          <p class="text-xs text-neutral mt-1">This will be your identity in the resistance.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label">
+            <span class="text-primary">›</span> EMAIL TRACE
+          </label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            class="form-control"
+            placeholder="your-email@email.com"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">
+            <span class="text-primary">›</span> ENCRYPTED KEY
+          </label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            class="form-control"
+            placeholder="Minimum 6 characters"
+            minlength="6"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label">
+            <span class="text-primary">›</span> CONFIRM ENCRYPTED KEY
+          </label>
+          <input 
+            type="password" 
+            id="confirmPassword" 
+            name="confirmPassword" 
+            class="form-control"
+            placeholder="Re-enter your key"
+            minlength="6"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="assigned_book" class="form-label">
+            <span class="text-secondary">›</span> ASSIGNED BOOK (Optional)
+          </label>
+            <div class="relative" id="book-auto">
+            <input 
+            type="text"
+            id="assigned_book"
+            name="assigned_book"
+            class="form-control"
+            list="book-suggestions"
+            placeholder="choose or type your own..."
+            autocomplete="off" 
+            />
+            <div id="book-dropdown" class="hidden absolute z-50 w-full mt-1 bg-background border-2 border-primary max-h-80 overflow-y-auto shadow-lg shadow-primary/20"></div>
+            </div>
+          <p class="text-xs text-neutral mt-1">The text you vow to protect and remember.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full glitch">
+          I AM READY →
+        </button>
+      </form>
+    </div>
+
+    <div class="mt-6 text-center">
+      <p class="text-neutral-light text-sm">
+        Already a Keeper? 
+        <a href="/auth/login" class="text-secondary hover:text-primary font-display">
+          SYSTEM ACCESS
+        </a>
+      </p>
+    </div>
+  </div>
+</Layout>
+
+<script src="../../scripts/book-auto.js"></script>
+
+ 

@@ -1,0 +1,118 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabaseClient';
+
+let errorMessage = '';
+
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!email || !password) {
+      throw new Error('All fields required');
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) throw error;
+
+    if (data.session) {
+      Astro.cookies.set('sb-access-token', data.session.access_token, {
+        path: '/',
+        httpOnly: true,
+        secure: import.meta.env.PROD,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7
+      });
+
+      Astro.cookies.set('sb-refresh-token', data.session.refresh_token, {
+        path: '/',
+        httpOnly: true,
+        secure: import.meta.env.PROD,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30
+      });
+
+      return Astro.redirect('/');
+    }
+
+  } catch (error: any) {
+    errorMessage = error.message || 'Authentication failed';
+  }
+}
+---
+
+<Layout title="SYSTEM ACCESS">
+  <div class="max-w-md mx-auto mt-8">
+    <div class="text-center mb-8">
+      <div class="text-5xl font-display font-black text-primary mb-4">451</div>
+      <h1 class="text-2xl mb-2">SYSTEM ACCESS</h1>
+      <p class="text-neutral-light font-mono text-sm">Authentication Required</p>
+    </div>
+
+    {errorMessage && (
+      <div class="alert alert-error">
+        <span class="font-mono text-xs">[ERROR]</span> {errorMessage}
+      </div>
+    )}
+
+    <div class="card">
+      <div class="border border-neutral p-4 mb-6 text-center">
+        <div class="font-display text-xs text-neutral-light uppercase tracking-widest mb-2">
+          Authorization Protocol
+        </div>
+        <div class="text-primary font-mono">LEVEL 1 CLEARANCE</div>
+      </div>
+
+      <form method="POST" class="space-y-5">
+        <div class="form-group">
+          <label for="email" class="form-label">
+            <span class="text-primary">›</span> EMAIL TRACE
+          </label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            class="form-control"
+            placeholder="your.signal@network.com"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">
+            <span class="text-primary">›</span> ENCRYPTED KEY
+          </label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            class="form-control"
+            placeholder="••••••••••••"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary w-full glitch">
+          INITIATE BREACH →
+        </button>
+      </form>
+    </div>
+    <div class="mt-6 text-center">
+      <p class="text-neutral-light text-sm">
+        New operative? 
+        <a href="/auth/signup" class="text-secondary hover:text-primary font-display">
+          REGISTER KEYCARD
+        </a>
+      </p>
+    </div>
+
+    <div class="terminal-box mt-8 text-xs">
+      <span class="text-neutral">NOTE: All access attempts are logged and monitored.</span>
+    </div>
+  </div>
+</Layout>
