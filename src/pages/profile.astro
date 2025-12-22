@@ -1,0 +1,257 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { supabase } from '../lib/supabaseClient';
+
+const { data: { session } } = await supabase.auth.getSession();
+if (!session) {
+    return Astro.redirect('/auth/login');
+}
+
+const user = session.user;
+
+const { data: keeper } = await supabase
+    .from('keeper_profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+const { data: texts } = await supabase
+    .from('preserved_texts')
+    .select('*')
+    .eq('keeper_id', user.id)
+    .order('preservation_date', { ascending: false });
+
+const { count: whisperCount } = await supabase
+    .from('whispers')
+    .select('*', { count: 'exact', head: true })   
+    .eq('whisperer_id', user.id);
+    
+const bookOptions = [
+    'Fahrenheit 451 - Ray Bradbury',
+    '1984 - George Orwell',
+    'Brave New World - Aldous Huxley',
+    'Snow Crash - Neal Stephenson',
+    "Neuromancer - William Gibson",
+    'Do Androids Dream of Electric Sheep? - Philip K. Dick',
+    'Flatland: A Romance of Many Dimensions - Edwin A. Abbott',
+    'To Kill a Mockingbird - Harper Lee',
+    'Pride and Prejudice - Jane Austen',
+    'Siddhartha - Hermann Hesse',
+    'The Myth of Sisyphus - Albert Camus',
+    'Tao Te Ching - Lao Tzu',
+    'A Clockwork Orange - Anthony Burgess',
+    'Ulysses - James Joyce',
+    'Slaughterhouse-Five - Kurt Vonnegut',
+];
+
+let successMessage = '';
+let errorMessage = '';
+
+if (Astro.request.method === 'POST') {
+    try {
+        const formData = await Astro.request.formData();
+        const keeperName = formData.get('keeper_name') as string;
+        const assignedBook = formData.get('assigned_book') as string;
+        const bioFragment = formData.get('bio_fragment') as string;
+        
+        if (!keeperName || keeperName.length < 3) {
+            throw new Error('Keeper name must be at least 3 characters');
+        }
+
+        const { error } = await supabase
+            .from('keeper_profiles')
+            .update({
+                keeper_name: keeperName,
+                assigned_book: assignedBook || null,
+                bio_fragment: bioFragment || null
+            })
+            .eq('id', user.id)
+
+            if (error) throw error;
+
+            return Astro.redirect('/profile?success=1');
+    } catch (error: any) {
+        errorMessage = error.message || 'Failed to update dossier';
+    }
+}
+
+const urlSuccess = Astro.url.searchParams.get('success');
+if (urlSuccess) {
+    successMessage = 'Dossier updated successfully';
+}
+
+function formatDate(dataString: string) {
+    return new Date(dateString).toISOString().split('T')[0].replace(/-/g, '.');
+}
+---
+
+<Layout title="YOUR DOSSIER">
+    <div class="max-w-5xl mx-auto">
+    <div class="mb-8">
+      <div class="font-mono text-xs text-secondary mb-2">[OPERATIVE_DOSSIER]</div>
+      <h1 class="text-3xl md:text-4xl">MEMORY KEEPER PROFILE</h1>
+    </div>
+
+    {successMessage && (
+      <div class="alert alert-success">
+        <span class="font-mono text-xs">[SUCCESS]</span> {successMessage}
+      </div>
+    )}
+
+    {errorMessage && (
+      <div class="alert alert-error">
+        <span class="font-mono text-xs">[ERROR]</span> {errorMessage}
+      </div>
+    )}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-1 space-y-6">
+        <div class="card text-center">
+          <div class="avatar avatar-lg mx-auto mb-4 text-2xl">
+            {keeper?.keeper_name?.charAt(0).toUpperCase() || 'K'}
+          </div>
+          <h2 class="text-xl text-primary font-display mb-1">
+            {keeper?.keeper_name || 'UNNAMED KEEPER'}
+          </h2>
+          <p class="text-neutral-light text-xs font-mono mb-4">{user.email}</p>
+          
+          {keeper?.assigned_book && (
+            <div class="border-t border-neutral/30 pt-4 mt-4">
+              <div class="text-xs text-neutral uppercase tracking-wider mb-1">Assigned Book</div>
+              <div class="text-secondary text-sm font-mono">{keeper.assigned_book}</div>
+            </div>
+          )}
+        </div>
+
+        <div class="card-secondary">
+          <div class="font-display text-xs text-neutral-light uppercase tracking-wider mb-4">
+            Statistics
+          </div>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-neutral-light">Texts Preserved</span>
+              <span class="text-primary font-display text-xl">{texts?.length || 0}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-neutral-light">Transmissions Sent</span>
+              <span class="text-secondary font-display text-xl">{whisperCount || 0}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-neutral-light">Status</span>
+              <span class="text-green-500 font-display">
+                <span class="status-dot status-online"></span> ACTIVE
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-accent">
+          <a href="/auth/logout" class="btn btn-accent w-full text-center">
+            DISCONNECT
+          </a>
+        </div>
+      </div>
+
+      <div class="lg:col-span-2 space-y-6">
+        <div class="card">
+          <div class="font-display text-xs text-primary uppercase tracking-wider mb-6">
+            Edit Dossier
+          </div>
+          <form method="POST" class="space-y-5">
+            <div class="form-group">
+              <label for="keeper_name" class="form-label">
+                <span class="text-primary">›</span> KEEPER NAME
+              </label>
+              <input 
+                type="text" 
+                id="keeper_name" 
+                name="keeper_name" 
+                class="form-control"
+                value={keeper?.keeper_name || ''}
+                minlength="3"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="assigned_book" class="form-label">
+                <span class="text-primary">›</span> ASSIGNED BOOK
+              </label>
+              <select id="assigned_book" name="assigned_book" class="form-control">
+                <option value="">Select a book...</option>
+                {bookOptions.map(book => (
+                  <option value={book} selected={keeper?.assigned_book === book}>
+                    {book}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="bio_fragment" class="form-label">
+                <span class="text-primary">›</span> BIO FRAGMENT
+              </label>
+              <textarea 
+                id="bio_fragment" 
+                name="bio_fragment" 
+                class="form-control"
+                rows="3"
+                placeholder="A brief description of yourself as a Memory Keeper..."
+              >{keeper?.bio_fragment || ''}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              SAVE CHANGES
+            </button>
+          </form>
+        </div>
+
+        <div class="card-secondary">
+          <div class="flex items-center justify-between mb-6">
+            <div class="font-display text-xs text-secondary uppercase tracking-wider">
+              My Preserved Texts
+            </div>
+            <a href="/posts/new" class="btn btn-secondary text-xs">
+              PRESERVE NEW
+            </a>
+          </div>
+
+          {texts && texts.length > 0 ? (
+            <div class="space-y-4">
+              {texts.map((text) => (
+                <div class="bg-background p-4 border-l-2 border-primary hover:border-secondary transition-colors">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1">
+                      <a href={`/posts/${text.id}`} class="text-lg hover:text-primary transition-colors">
+                        {text.book_title}
+                      </a>
+                      {text.original_author && (
+                        <p class="text-neutral-light text-xs mt-1">by {text.original_author}</p>
+                      )}
+                      <div class="text-xs text-neutral font-mono mt-2">
+                        Preserved: {formatDate(text.preservation_date)}
+                      </div>
+                    </div>
+                    <div class="flex gap-2 text-xs">
+                      <a href={`/posts/${text.id}/edit`} class="text-secondary hover:text-primary">EDIT</a>
+                      <span class="text-neutral">|</span>
+                      <a href={`/posts/${text.id}/delete`} class="text-accent hover:text-primary">DESTROY</a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div class="text-center py-8 text-neutral">
+              <p class="mb-4 font-mono">No texts preserved yet.</p>
+              <a href="/posts/new" class="btn btn-primary">
+                PRESERVE YOUR FIRST TEXT
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</Layout>
