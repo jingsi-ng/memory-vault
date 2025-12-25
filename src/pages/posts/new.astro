@@ -72,7 +72,7 @@ if (Astro.request.method === 'POST') {
       </div>
     )}
 
-    <div class="card">
+    <div class="card" style="overflow: visible">
       <form method="POST" class="space-y-6">
         <div class="form-group">
           <label for="book_title" class="form-label">
@@ -101,17 +101,23 @@ if (Astro.request.method === 'POST') {
           />
         </div>
 
-        <div class="form-group">
+      <div class="form-group">
           <label for="classification" class="form-label">
-            <span class="text-primary">›</span> CLASSIFICATION
+            <span class="text-primary">›</span> CLASSIFICATION <span class="text-accent">*</span>
           </label>
-          <select id="classification" name="classification" class="form-control">
-            <option value="">Select classification...</option>
-            {classifications.map(c => (
-              <option value={c.value}>{c.label}</option>
-            ))}
-          </select>
-        </div>
+        <div class="relative" id="classification-auto">
+          <input 
+            type="text"
+            id="classification"
+            name="classification"
+            class="form-control"
+            placeholder="Select classification..."
+            autocomplete="off"
+            required
+          />
+       <div id="classification-dropdown" class="hidden absolute z-50 w-full mt-1 bg-background border-2 border-primary max-h-80 overflow-y-auto shadow-lg shadow-primary/20"></div>
+      </div>
+      </div>
 
         <div class="form-group">
           <label for="text_fragment" class="form-label">
@@ -151,3 +157,5 @@ if (Astro.request.method === 'POST') {
   </div>
   
 </Layout>
+
+<script src="../../scripts/classification-auto.js"></script>

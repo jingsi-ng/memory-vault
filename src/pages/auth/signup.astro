@@ -55,7 +55,7 @@ if (Astro.request.method === 'POST') {
       console.error('Profile error:', profileError);
     }
 
-    successMessage = 'Registration complete. Check your email to verify your identity.';
+    return Astro.redirect('/auth/login?registered=true');
 
   } catch (error: any) {
     errorMessage = error.message || 'Registration failed';
@@ -118,7 +118,7 @@ if (Astro.request.method === 'POST') {
 
         <div class="form-group">
           <label for="email" class="form-label">
-            <span class="text-primary">›</span> EMAIL TRACE
+            <span class="text-primary"> > </span> EMAIL TRACE
           </label>
           <input 
             type="email" 
@@ -132,7 +132,7 @@ if (Astro.request.method === 'POST') {
 
         <div class="form-group">
           <label for="password" class="form-label">
-            <span class="text-primary">›</span> ENCRYPTED KEY
+            <span class="text-primary"> > </span> ENCRYPTED KEY
           </label>
           <input 
             type="password" 
@@ -147,7 +147,7 @@ if (Astro.request.method === 'POST') {
 
         <div class="form-group">
           <label for="confirmPassword" class="form-label">
-            <span class="text-primary">›</span> CONFIRM ENCRYPTED KEY
+            <span class="text-primary"> > </span> CONFIRM ENCRYPTED KEY
           </label>
           <input 
             type="password" 
@@ -162,7 +162,7 @@ if (Astro.request.method === 'POST') {
 
         <div class="form-group">
           <label for="assigned_book" class="form-label">
-            <span class="text-secondary">›</span> ASSIGNED BOOK (Optional)
+            <span class="text-secondary"> > </span> ASSIGNED BOOK (Optional)
           </label>
             <div class="relative" id="book-auto">
             <input 

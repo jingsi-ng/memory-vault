@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import { supabase } from '../../lib/supabaseClient';
 
 let errorMessage = '';
+const registered = Astro.url.searchParams.get('registered');
 
 if (Astro.request.method === 'POST') {
   try {
@@ -61,6 +62,12 @@ if (Astro.request.method === 'POST') {
       </div>
     )}
 
+    {registered && (
+      <div class="alert alert-success mb-4">
+        <span class="font-mono text-xs">[SUCCESS]</span> Registration complete! Please login to access the vault.
+      </div>
+    )}
+
     <div class="card">
       <div class="border border-neutral p-4 mb-6 text-center">
         <div class="font-display text-xs text-neutral-light uppercase tracking-widest mb-2">
@@ -72,7 +79,7 @@ if (Astro.request.method === 'POST') {
       <form method="POST" class="space-y-5">
         <div class="form-group">
           <label for="keeper_name" class="form-label">
-            <span class="text-primary">›</span> KEEPER NAME
+            <span class="text-primary"> > </span> KEEPER NAME
           </label>
           <input 
             type="text" 
@@ -86,7 +93,7 @@ if (Astro.request.method === 'POST') {
 
         <div class="form-group">
           <label for="password" class="form-label">
-            <span class="text-primary">›</span> ENCRYPTED KEY
+            <span class="text-primary"> > </span> ENCRYPTED KEY
           </label>
           <input 
             type="password" 
