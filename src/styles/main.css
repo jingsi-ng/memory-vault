@@ -446,13 +446,13 @@ h3, .text-xl {
     padding: 0.5rem 1rem;
   }
 
-  .flex.flex-wrap.justify-center.gap-4 {
+  .flex.flex-wrap.gap-4[class*="justify"] {
     flex-direction: column;
     align-items: stretch;
     padding: 0 1rem;
   }
   
-  .flex.flex-wrap.justify-center.gap-4 .btn {
+  .flex.flex-wrap.gap-4[class*="justify"] .btn {
     width: 100%;
   }
 

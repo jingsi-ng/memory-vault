@@ -59,6 +59,35 @@ function getBadgeClass(classification: string) {
     </div>
   </div>
 
+<div class="card-secondary mb-8">
+  <div class="flex flex-col md:flex-row gap-4">
+    <div class="flex-1">
+      <label class="form-label text-xs">
+        <span class="text-primary"> > </span> SEARCH ARCHIVE
+      </label>
+      <input 
+        type="text" 
+        id="search" 
+        placeholder="Search by title or author..."
+        class="form-control"
+      />
+    </div>
+    <div>
+      <label class="form-label text-xs">
+        <span class="text-secondary"> > </span> FILTER BY CLASS
+      </label>
+      <select id="filter" class="form-control">
+        <option value="all">ALL CLASSIFICATIONS</option>
+        <option value="DYSTOPIA">DYSTOPIA</option>
+        <option value="PHILOSOPHY">PHILOSOPHY</option>
+        <option value="CYBERPUNK">CYBERPUNK</option>
+        <option value="FORBIDDEN">FORBIDDEN</option>
+        <option value="CLASSIC">CLASSIC</option>
+      </select>
+    </div>
+  </div>
+</div>
+
   {texts && texts.length > 0 ? (
     <div class="space-y-6">
       {texts.map((text, index) => (
@@ -124,4 +153,30 @@ function getBadgeClass(classification: string) {
       <a href="/posts/new" class="btn btn-primary">PRESERVE YOUR FIRST TEXT</a>
     </div>
   )}
+
+<script>
+  const searchInput = document.getElementById('search');
+  const filterSelect = document.getElementById('filter');
+  const cards = document.querySelectorAll('article.card');
+
+  function filterCards() {
+    const searchTerm = searchInput?.value.toLowerCase() || '';
+    const filterValue = filterSelect?.value || 'all';
+
+    cards.forEach(card => {
+      const title = card.querySelector('h2')?.textContent?.toLowerCase() || '';
+      const author = card.querySelector('.text-neutral-light')?.textContent?.toLowerCase() || '';
+      const badge = card.querySelector('.badge')?.textContent?.trim().toUpperCase() || '';
+
+      const matchesSearch = title.includes(searchTerm) || author.includes(searchTerm);
+      const matchesFilter = filterValue === 'all' || badge === filterValue;
+
+      card.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
+    });
+  }
+
+  searchInput?.addEventListener('input', filterCards);
+  filterSelect?.addEventListener('change', filterCards);
+</script>
+
 </Layout>

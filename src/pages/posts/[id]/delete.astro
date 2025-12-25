@@ -39,7 +39,7 @@ if (Astro.request.method === 'POST') {
 
     if (error) throw error;
 
-    return Astro.redirect(`/posts/${id}`);
+    return Astro.redirect('/posts');
 
   } catch (error: any) {
     errorMessage = error.message || 'Failed to destroy file';
@@ -84,7 +84,7 @@ if (Astro.request.method === 'POST') {
             <form method="POST">
                 <div class="flex gap-4">
                     <button type="submit" class="btn btn-accent flex-1 glitch">YES, BURN IT</button>
-                    <a href={`/posts/${id}`} class="btn btn-ghost flex-1 text-center">PRESERVE IR</a>
+                    <a href={`/posts/${id}`} class="btn btn-ghost flex-1 text-center">PRESERVE IT</a>
                 </div>
             </form>
     </div>

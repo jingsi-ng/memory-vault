@@ -19,7 +19,7 @@ if (whisperError || !whisper) {
     return Astro.redirect('/posts');
 }    
 
-if (whisper.keeper_id !== session.user.id) {
+if (whisper.whisperer_id !== session.user.id) {
     return Astro.redirect(`/posts/${whisper.text_id}`);
 }
 
@@ -58,9 +58,9 @@ if (Astro.request.method === 'POST') {
             </div>
             <div class="bg-background p-4 border-l-2 border-accent mb-6">
                 <div class="font-mono text-xs text-neutral mb-2">[WHISPER_PREVIEW]</div>
-                <p class="text-text-muted text-sm italic">"{whisper.content}"</p>
+                <p class="text-text-muted text-sm italic">"{whisper.message}"</p>
                 <p class="text-neutral-light text-xs mt-2">
-                    Transmitted: {new Date(whisper.created_at).toLocaleDateString()}
+                    Transmitted: {new Date(whisper.whispered_at).toLocaleDateString()}
                 </p>
             </div>
 
