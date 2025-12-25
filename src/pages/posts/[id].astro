@@ -200,7 +200,13 @@ function getBadgeClass(classification: string) {
                     <span class="text-xs text-neutral font-mono">
                       {formatDate(whisper.whispered_at)}
                     </span>
-                  </div>
+              
+              {user && whisper.whisperer_id === user.id && (
+                <a href={`/whispers/${whisper.id}/delete`} class="text-xs text-accent hover:text-red-500 transition-colors font-mono ml-auto">
+                  [ERASE]
+                </a>
+              )}            
+            </div>
                   <p class="text-text-muted leading-relaxed">{whisper.message}</p>
                 </div>
               </div>
