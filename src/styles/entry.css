@@ -392,3 +392,99 @@
       box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
       transition: all 0.3s ease;
 }
+
+.btn-confirm:hover {
+      box-shadow: 0 6px 25px rgba(255, 107, 53, 0.6);
+      transform: translateY(-2px);
+}
+
+.btn-main-text {
+      font-size: 1.3rem;
+      letter-spacing: 0.2rem;
+      font-weight: 700;
+}
+
+.btn-sub-text {
+      font-size: 0.8rem;
+      opacity: 0.9;
+      font-weight: 400;
+      letter-spacing: 0.1rem;
+}
+
+.btn-cancel {
+      background: transparent;
+      color: #888888;
+      padding: 1rem 2rem;
+      border: 1px solid #444444;
+      cursor: pointer;
+      font-size: 0.9rem;
+      letter-spacing: 0.1rem;
+      transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+      color: #ffffff;
+      border-color: #888888;
+      background: rgba (255, 255, 255, 0.05);
+}
+
+.modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: 1px solid #666;
+      width: 40px;
+      height: 40px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      line-height: 1;
+}
+
+.modal-close:hover {
+      background: rgba(255, 107, 53, 0.8);
+      border-color: #FF6B35;
+      transform: rotate(90deg);
+    }
+    
+/*Responsive Design*/
+ @media (max-width: 768px) {
+      .modal-container {
+        margin: 1rem;
+        max-height: 95vh;
+      }
+
+      .modal-body {
+        padding: 1.5rem;
+      }
+
+      .modal-header {
+        padding: 1.5rem;
+      }
+
+      .modal-title {
+        font-size: 1.2rem;
+      }
+
+      .quote-text {
+        font-size: 1.1rem;
+      }
+
+      .final-question {
+        font-size: 1.2rem;
+      }
+
+      .btn-main-text {
+        font-size: 1.1rem;
+      }
+    }
+    
+    #enterBtn {
+      cursor: pointer;
+    }
