@@ -35,15 +35,12 @@ import '../styles/entry.css';
           <span class="logo-text">451</span>
         </div>
       </div>
-
       <h1 class="font-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-wider mb-2 animate-fade-in">
         <span class="text-primary">PROJECT</span> <span class="text-text">451</span>
       </h1>
-      
       <p class="font-display text-lg md:text-xl tracking-[0.3em] text-primary uppercase mb-8 animate-fade-in-delay-1">
         The Memory Vault
       </p>
-
       <div class="space-y-2 mb-8 font-mono text-sm md:text-base">
         <p class="terminal-line text-secondary">
           <span class="text-primary">></span> INITIALIZING ARCHIVE SYSTEM...
@@ -55,16 +52,14 @@ import '../styles/entry.css';
           <span class="text-primary">></span> STATUS: READY TO PRESERVE<span class="blink">_</span>
         </p>
       </div>
-
       <blockquote class="quote font-body italic text-text-muted text-base md:text-lg mb-10 max-w-lg mx-auto leading-relaxed">
-        "I design with intention, code with passion,<br>
-		and preserve stories that matter."
+        "451℉ - the temperature at which paper burns.<br>
+		    But memory? Memory burns at a much higher degree."
       </blockquote>
 
-
-      <a href="/home" class="enter-btn btn-primary inline-block font-display text-sm md:text-base uppercase tracking-widest px-10 py-4 border-2 border-primary bg-primary text-background transition-all duration-300 hover:bg-transparent hover:text-primary">
+      <button id="enterBtn" class="enter-btn btn-primary inline-block font-display text-sm md:text-base uppercase tracking-widest px-10 py-4 border-2 border-primary bg-primary text-background transition-all duration-300 hover:bg-transparent hover:text-primary cursor-pointer">
         ENTER THE VAULT
-      </a>
+      </button>
     </main>
 
     <footer class="absolute bottom-6 left-0 right-0 text-center">
@@ -73,5 +68,60 @@ import '../styles/entry.css';
       </p>
     </footer>
   </div>
+
+  <div id="worldviewModal" class="modal-overlay">
+    <div class="modal-conatiner">
+      <div class="modal-header">
+        <div class="header-bar"></div>
+        <h2 class="modal-title font-display">WARNING: RESTRICTED AREA</h2>
+        <p class="modal-subtitle font-mono">CLASSIFIED - LEVEL 451 CLEARANCE REQUIRED</p>
+      </div>
+      <div class="modal-main">
+        <div class="modal-quote">
+          <p class="quote-text font-body">451℉ - the temperature at which paper burns.</p>
+        </div>
+        <div class="modal-terminal font-mon">
+          <p class="terminal-text">
+            <span class="prompt">&gt;</span> YEAR: <span class="highlight-cyan">2077</span>
+          </p>
+          <p class="terminal-text">
+            <span class="prompt">&gt;</span> STATUS: <span class="highlight-orange">BOOKS BANNED</span>
+          </p>
+          <p class="terminal-text">
+            <span class="prompt">&gt;</span> ALERT: <span class="highlight-orange">LITERATURE IS DANGEROUS</span>
+          </p>
+          <p class="terminal-text">
+            <span class="prompt">&gt;</span> CONSEQUENCE: <span class="highlight-orange">READING = REBELLION</span>
+          </p>
+        </div>
+        <div class="modal-narrative font-body">
+          <p class="narrative-text">But we are the <strong class=highlight-cyan>Memory Keepers</strong>.</p>
+          <div class="manifesto">
+            <p>We preserve the texts they tried to burn.</p>
+            <p>We remember what they want forgotten.</p>
+            <p>We whisper the words they banned.</p>
+          </div>
+          <p class="narrative-text">
+            Every fragment saved is an act of resistance. Every book remembered is a victory agianst erasure.
+          </p>
+        </div>
+        <div class="warning-box font-mono">
+          <p class="warning-text">
+            By entering this vault, you become a keeper of forbidden knowledge. You join those who refuse to forget.
+          </p>
+        </div>
+        <p class="final-question font-display">ARE YOU READY TO RESIST?</p>
+      </div>
+        <div class="modal-footer">
+          <a href="/home" class="btn-confirm font-display">
+          <span class="btn-main-text">I AM READY</span>
+          <span class="btn-sub-text font-mono">ENTER THE MEMORY VAULT</span>
+        </a>
+        <button id="closeModal" class="btn-cancel font-mono">NOT YET</button>
+        </div>
+        <button class="modal-close" id="modalClose" aria-label="Close">ｘ</button>
+    </div>
+  </div>
+
 </body>
 </html>
