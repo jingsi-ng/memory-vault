@@ -11,7 +11,8 @@ const { data: text, error: textError } = await supabase
   .from('preserved_texts')
   .select(`
     *,
-    keeper_profiles (
+    keeper_profiles 
+    (
       keeper_name,
       assigned_book
     )
@@ -77,6 +78,10 @@ function getBadgeClass(classification: string) {
     default: return 'badge-primary';
   }
 }
+
+const textId = id;
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || 'https://eyckvpmlfvgvlsnzrekg.supabase.co';
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5Y2t2cG1sZnZndmxzbnpyZWtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyMjQ4OTEsImV4cCI6MjA4MTgwMDg5MX0.htPogDpA-wTHcLrg8s2b-vVoT9YsFG4ysikCqgokLck';
 ---
 
 <Layout title={text.book_title}>
@@ -148,7 +153,12 @@ function getBadgeClass(classification: string) {
 
     <section class="border-t border-neutral/30 pt-8">
       <div class="section-header">
-        <span class="section-title">TRANSMISSION LOG ({whispers?.length || 0})</span>
+        <span class="section-title">TRANSMISSION LOG (<span id="whisper-count">{whispers?.length || 0}</span>)</span>
+  
+        <div id="realtime-status" style="display:inline-flex;align-items:center;gap:6px;margin-left:12px;font:11px monospace">
+          <span id="rt-dot" style="width:8px;height:8px;border-radius:50%;background:#eab308"></span>
+          <span id="rt-text" style="color:#eab308">CONNECTING...</span>
+        </div>
       </div>
 
       {user ? (
@@ -184,10 +194,10 @@ function getBadgeClass(classification: string) {
         </div>
       )}
 
-      {whispers && whispers.length > 0 ? (
-        <div class="space-y-4">
-          {whispers.map((whisper) => (
-            <div class="card-secondary">
+      <div id="whispers-container" class="space-y-4">
+        {whispers && whispers.length > 0 ? (
+          whispers.map((whisper) => (
+            <div class="card-secondary" data-whisper-id={whisper.id}>
               <div class="flex items-start gap-4">
                 <div class="avatar avatar-sm flex-shrink-0">
                   {whisper.keeper_profiles?.keeper_name?.charAt(0).toUpperCase() || 'K'}
@@ -201,23 +211,118 @@ function getBadgeClass(classification: string) {
                       {formatDate(whisper.whispered_at)}
                     </span>
               
-              {user && whisper.whisperer_id === user.id && (
-                <a href={`/whispers/${whisper.id}/delete`} class="text-xs text-accent hover:text-red-500 transition-colors font-mono ml-auto">
-                  [ERASE]
-                </a>
-              )}            
-            </div>
+                    {user && whisper.whisperer_id === user.id && (
+                      <a href={`/whispers/${whisper.id}/delete`} class="text-xs text-accent hover:text-red-500 transition-colors font-mono ml-auto">
+                        [ERASE]
+                      </a>
+                    )}            
+                  </div>
                   <p class="text-text-muted leading-relaxed">{whisper.message}</p>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div class="text-center py-8 text-neutral font-mono">
-          <p>No transmissions received. Be the first to respond.</p>
-        </div>
-      )}
+          ))
+        ) : (
+          <div id="empty-message" class="text-center py-8 text-neutral font-mono">
+            <p>No transmissions received. Be the first to respond.</p>
+          </div>
+        )}
+      </div>
     </section>
   </article>
 </Layout>
+
+<script define:vars={{ textId, supabaseUrl, supabaseKey }}>
+  setTimeout(async () => {
+    try {
+      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      supabase.channel('whispers-' + textId)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'whispers',
+          filter: 'text_id=eq.' + textId
+        }, async (payload) => {
+          console.log('[451] New whisper:', payload);
+          
+          const { data: profile } = await supabase
+            .from('keeper_profiles')
+            .select('keeper_name')
+            .eq('id', payload.new.whisperer_id)
+            .single();
+
+          addWhisperToPage(payload.new, profile?.keeper_name);
+        })
+        .subscribe((status) => {
+          console.log('[451] Realtime status:', status);
+          updateStatus(status === 'SUBSCRIBED');
+        });
+
+      const style = document.createElement('style');
+      style.textContent = '@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}';
+      document.head.appendChild(style);
+
+    } catch (error) {
+      console.error('[451] Realtime error:', error);
+      updateStatus(false);
+    }
+  }, 1000);
+
+  function updateStatus(connected) {
+    const dot = document.getElementById('rt-dot');
+    const text = document.getElementById('rt-text');
+    if (connected) {
+      dot.style.background = '#22c55e';
+      dot.style.animation = 'pulse 2s infinite';
+      text.style.color = '#22c55e';
+      text.textContent = 'REALTIME ACTIVE';
+    } else {
+      dot.style.background = '#ef4444';
+      text.style.color = '#ef4444';
+      text.textContent = 'LINK FAILED';
+    }
+  }
+
+  function addWhisperToPage(whisper, keeperName) {
+    const container = document.getElementById('whispers-container');
+    
+    const emptyMsg = document.getElementById('empty-message');
+    if (emptyMsg) emptyMsg.remove();
+
+    const el = document.createElement('div');
+    el.className = 'card-secondary';
+    el.style.borderLeft = '3px solid #00E5FF';
+    el.dataset.whisperId = whisper.id;
+    
+    const initial = (keeperName || 'K')[0].toUpperCase();
+    const time = new Date().toISOString().slice(0, 16).replace('T', ' ').replace(/-/g, '.');
+    
+    el.innerHTML = `
+      <div class="flex items-start gap-4">
+        <div class="avatar avatar-sm flex-shrink-0">${initial}</div>
+        <div class="flex-1">
+          <div class="flex flex-wrap items-center gap-3 mb-2">
+            <span class="text-secondary font-mono text-sm">${keeperName || 'ANONYMOUS'}</span>
+            <span class="text-xs text-neutral font-mono">${time}</span>
+            <span class="text-xs font-mono" style="color:#00E5FF;margin-left:auto">[NEW]</span>
+          </div>
+          <p class="text-text-muted leading-relaxed">${whisper.message}</p>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(el);
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    const count = document.getElementById('whisper-count');
+    if (count) count.textContent = parseInt(count.textContent) + 1;
+
+    setTimeout(() => {
+      el.style.borderLeft = '';
+      const newTag = el.querySelector('[style*="00E5FF"]');
+      if (newTag) newTag.remove();
+    }, 5000);
+  }
+</script>
